@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("v1/api/user")
 public class UserController {
@@ -22,5 +24,18 @@ public class UserController {
             @Valid @RequestBody ReqUserDto req
     ) {
         return ResponseEntity.ok(userService.create(req));
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<ResMessageDto<ResUserDto>> updateUser(
+            @Valid @RequestBody ReqUserDto req,
+            @RequestParam int id
+    ) {
+        return ResponseEntity.ok(userService.update(id, req));
+    }
+
+    @GetMapping
+    public ResponseEntity<ResMessageDto<List<ResUserDto>>> getAllUser() {
+        return ResponseEntity.ok(userService.getAll());
     }
 }

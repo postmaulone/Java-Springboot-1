@@ -11,8 +11,10 @@ import com.techno.fromKt.service.UserService;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import lombok.AllArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -73,17 +75,20 @@ public class UserServiceImpl implements UserService {
             return type;
         }
     }
+    private String hashPw(String pw){
+        Argon2 password = Argon2Factory.create();
+        return password.hash(10, 65536 , 1, pw.toCharArray());
+    }
 
     @Override
     public ResMessageDto<ResUserDto> create(ReqUserDto req) {
         checkDupeUsr(req.getUsername());
         checkDupeEml(req.getEmail());
-        Argon2 password = Argon2Factory.create();
         UserEntity input = UserEntity.builder()
                 .name(req.getName())
                 .username(req.getUsername())
                 .email(req.getEmail())
-                .password(password.toString())
+                .password(hashPw(req.getPassword()))
                 .type(typeAssign(req.getType()))
                 .build();
         userRepository.save(input);
@@ -105,7 +110,7 @@ public class UserServiceImpl implements UserService {
             user.get().setName(req.getName());
             user.get().setUsername(req.getUsername());
             user.get().setEmail(req.getEmail());
-            user.get().setPassword(password.hash(10, 65536, 1, req.getPassword().toCharArray()));
+            user.get().setPassword(hashPw(req.getPassword()));
             user.get().setType(typeAssign(req.getType()));
             userRepository.save(user.get());
             return new ResMessageDto<>(200, "User added!", resUser(req.getUsername()));
@@ -118,7 +123,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResMessageDto<List<ResUserDto>> getAll() {
-        return null;
+        List<UserEntity> users = userRepository.findAll();
+        List<ResUserDto> res = new ArrayList<>();
+        for (UserEntity user : users){
+            if(user.getUsername() != null){
+                ResUserDto data = resUser(user.getUsername());
+                res.add(data);
+            }
+        }
+        return new ResMessageDto<>(200, "Success", res);
     }
 
     @Override
