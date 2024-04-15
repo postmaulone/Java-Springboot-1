@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
         return user;
     }
     private String typeAssign(String type) {
-        TypeEntity typeFound = typeRepository.findByDescription(nullType(type));
+        TypeEntity typeFound = typeRepository.findByName(nullType(type));
         if (typeFound == null) {
             throw new RuntimeException("Type not found"); // Replace RuntimeException with DataNotFoundException if it's defined in your project
         }
