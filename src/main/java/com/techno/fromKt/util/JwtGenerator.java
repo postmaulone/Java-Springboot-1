@@ -33,14 +33,14 @@ public class JwtGenerator {
         return builder.compact();
     }
     public Claims decodeJwt(String jwt) {
-        try {
+//        try {
             return Jwts.parserBuilder()
                     .setSigningKey(SECRET_KEY.getBytes())
                     .build()
                     .parseClaimsJws(jwt).getBody();
-        } catch (JwtException e) {
-            e.printStackTrace();
-            throw new IllegalArgumentException("Invalid token asf asf");
-        }
+//        } catch (JwtException e) {
+//            e.printStackTrace();
+//            throw new IllegalArgumentException("Invalid token asf asf");
+//        }
     }
 }

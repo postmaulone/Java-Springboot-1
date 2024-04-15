@@ -19,7 +19,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         String token = request.getHeader("token");
         if (token == null) {
             ResMessageDto<String> body = new ResMessageDto<>(
-                    401, "You don't have permission", null
+                    HttpStatus.FORBIDDEN.value(), "You don't have permission", null
             );
             internalServerError(body, response);
             return false;
@@ -29,7 +29,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         } catch (ExpiredJwtException e) {
             e.printStackTrace();
             ResMessageDto<String> body = new ResMessageDto<>(
-                    401, "Invalid token", null
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "Invalid token",
+//                    e.getMessage(),
+                    null
             );
             internalServerError(body, response);
             return false;
@@ -38,7 +41,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
     private void internalServerError(ResMessageDto<String> body, HttpServletResponse response) throws IOException {
-        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setStatus(body.getStatus());
         response.setContentType("application/json");
         response.getWriter().write(convertObjectToJson(body));
     }
