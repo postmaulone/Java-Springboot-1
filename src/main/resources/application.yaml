@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: bootcamp-service
+  dataSource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/bootcamp_fp2
+    username: postgres
+    password: admin123
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        ddl-auto: none
+    show-sql: true
+    generate-ddl: true
+
+server:
+  port: 3000
