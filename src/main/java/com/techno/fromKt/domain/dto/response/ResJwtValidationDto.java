@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 public class ResJwtValidationDto {
     private String email;
+    private int id;
     private String username;
     private String type;
 }

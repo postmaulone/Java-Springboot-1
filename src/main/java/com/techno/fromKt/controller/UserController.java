@@ -38,4 +38,11 @@ public class UserController {
     public ResponseEntity<ResMessageDto<List<ResUserDto>>> getAllUser() {
         return ResponseEntity.ok(userService.getAll());
     }
+
+    @GetMapping("/")
+    public ResponseEntity<ResMessageDto<ResUserDto>> getUserById(
+            @RequestHeader String token
+    ){
+        return ResponseEntity.ok(userService.getById(token));
+    }
 }

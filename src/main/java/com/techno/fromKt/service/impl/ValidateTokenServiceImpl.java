@@ -14,6 +14,7 @@ public class ValidateTokenServiceImpl implements ValidateTokenService {
         Claims claim = new JwtGenerator().decodeJwt(token);
         return new ResJwtValidationDto(
                 claim.getSubject(),
+                (Integer) claim.get("id"),
                 claim.get("username").toString(),
                 claim.get("type").toString()
         );

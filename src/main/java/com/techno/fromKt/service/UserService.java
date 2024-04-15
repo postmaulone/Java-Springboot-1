@@ -8,6 +8,6 @@ public interface UserService {
     ResMessageDto<ResUserDto> create(ReqUserDto req);
     ResMessageDto<ResUserDto> update(int id, ReqUserDto req);
     ResMessageDto<java.util.List<ResUserDto>> getAll();
-    ResMessageDto<ResUserDto> getById(int id);
+    ResMessageDto<ResUserDto> getById(String token);
 //    ResMessageDto<String> delete(int id);
 }

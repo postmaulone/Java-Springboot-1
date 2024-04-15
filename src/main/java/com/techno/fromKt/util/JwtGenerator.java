@@ -19,6 +19,7 @@ public class JwtGenerator {
 
         JwtBuilder builder = Jwts.builder()
                 .setSubject(req.getEmail())
+                .claim("id", req.getId())
                 .claim("username", req.getUsername())
                 .claim("type", req.getType())
                 .setIssuer("admin")

@@ -8,6 +8,7 @@ import com.techno.fromKt.domain.entity.UserEntity;
 import com.techno.fromKt.repository.TypeRepository;
 import com.techno.fromKt.repository.UserRepository;
 import com.techno.fromKt.service.UserService;
+import com.techno.fromKt.util.JwtGenerator;
 import de.mkammerer.argon2.Argon2;
 import de.mkammerer.argon2.Argon2Factory;
 import lombok.AllArgsConstructor;
@@ -54,12 +55,12 @@ public class UserServiceImpl implements UserService {
                 type
         );
     }
-    public Optional<UserEntity> isExist(int id) {
+    public UserEntity isExist(int id) {
         Optional<UserEntity> user = userRepository.findById(id);
         if (user.isEmpty()) {
             throw new IllegalArgumentException("User id not found");
         }
-        return user;
+        return user.get();
     }
     private String typeAssign(String type) {
         TypeEntity typeFound = typeRepository.findByName(nullType(type));
@@ -100,23 +101,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResMessageDto<ResUserDto> update(int id, ReqUserDto req) {
-        Optional<UserEntity> user = isExist(id);
-        if (user.isPresent()) {
-            if (!user.get().getUsername().equals(req.getUsername()))
-                checkDupeUsr(req.getUsername());
-            if (!user.get().getEmail().equals(req.getEmail()))
-                checkDupeEml(req.getEmail());
-            Argon2 password = Argon2Factory.create();
-            user.get().setName(req.getName());
-            user.get().setUsername(req.getUsername());
-            user.get().setEmail(req.getEmail());
-            user.get().setPassword(hashPw(req.getPassword()));
-            user.get().setType(typeAssign(req.getType()));
-            userRepository.save(user.get());
-            return new ResMessageDto<>(200, "User added!", resUser(req.getUsername()));
-        }
+        UserEntity user = isExist(id);
+        if (!user.getUsername().equals(req.getUsername()))
+            checkDupeUsr(req.getUsername());
+        if (!user.getEmail().equals(req.getEmail()))
+            checkDupeEml(req.getEmail());
+        Argon2 password = Argon2Factory.create();
+        user.setName(req.getName());
+        user.setUsername(req.getUsername());
+        user.setEmail(req.getEmail());
+        user.setPassword(hashPw(req.getPassword()));
+        user.setType(typeAssign(req.getType()));
+        userRepository.save(user);
         return new ResMessageDto<>(
-                200, "User updated!",
+                200, "User added!",
                 resUser(req.getUsername())
         );
     }
@@ -135,7 +133,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResMessageDto<ResUserDto> getById(int id) {
-        return null;
+    public ResMessageDto<ResUserDto> getById(String token) {
+        int id = (int) new JwtGenerator().decodeJwt(token).get("id");
+        UserEntity user = isExist(id);
+        ResUserDto res = resUser(user.getUsername());
+        return new ResMessageDto<>(200, "Success", res);
     }
 }
