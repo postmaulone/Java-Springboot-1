@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @Builder
-@Table(name = "mst_game")
+@Table(name = "mst_user")
 public class UserEntity {
     // Getters and setters
     @Id

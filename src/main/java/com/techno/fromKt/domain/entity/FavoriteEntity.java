@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @AllArgsConstructor
@@ -18,7 +20,7 @@ public class FavoriteEntity {
     @Column(name = "user_added")
     private String username;
     @Column(name = "dt_added")
-    private String add;
+    private LocalDate add;
     @Column(name = "dt_updated")
-    private String updated;
+    private LocalDate updated;
 }

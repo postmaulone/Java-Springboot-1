@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
                 .username(req.getUsername())
                 .email(req.getEmail())
                 .password(password.toString())
-                .type(req.getType())
+                .type(typeAssign(req.getType()))
                 .build();
         userRepository.save(input);
         return new ResMessageDto<>(
