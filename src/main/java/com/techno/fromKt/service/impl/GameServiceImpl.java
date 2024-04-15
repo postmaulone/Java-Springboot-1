@@ -4,82 +4,158 @@ import com.techno.fromKt.domain.dto.request.ReqGameDto;
 import com.techno.fromKt.domain.dto.response.ResGameDto;
 import com.techno.fromKt.domain.dto.response.ResMessageDto;
 import com.techno.fromKt.domain.entity.GameEntity;
-import com.techno.fromKt.domain.entity.GenreEntity;
 import com.techno.fromKt.domain.entity.TypeEntity;
 import com.techno.fromKt.repository.GameRepository;
-import com.techno.fromKt.repository.GenreRepository;
 import com.techno.fromKt.repository.TypeRepository;
 import com.techno.fromKt.service.GameService;
+import com.techno.fromKt.util.GeneralFunction;
+import com.techno.fromKt.util.JwtGenerator;
+import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class GameServiceImpl implements GameService {
+    private final GeneralFunction function;
     GameRepository repo;
     TypeRepository typeRepo;
-    GenreRepository genreRepo;
-
-    private TypeEntity typeAssign(String type) {
-        TypeEntity typeFound = typeRepo.findByName(nullType(type));
-        if (typeFound == null) {
-            throw new RuntimeException("Type not found"); // Replace RuntimeException with DataNotFoundException if it's defined in your project
-        }
-        return typeFound; // Assuming 'getTypeId' returns a String. Make sure this is non-null or handled if it can be.
-    }
-
-    private String nullType(String type) {
-        if (type.isEmpty()) {
-            return "Free";
-        } else {
-            return type;
-        }
-    }
-
-    private Set<GenreEntity> genreSearch(Set<Integer> genre){
-        Set<GenreEntity> set = new HashSet<>();
-        for (Integer genreId : genre) {
-            GenreEntity entity = (GenreEntity) genreRepo.findById(genreId)
-                    .orElseThrow(() -> new IllegalArgumentException("Genre not found"));
-            set.add(entity);
-        }
-        return set;
-    }
 
     @Override
     public ResMessageDto<String> create(ReqGameDto req) {
         GameEntity input = GameEntity.builder()
-                .type(typeAssign(req.getType()))
+                .type(function.typeAssign(req.getType()))
                 .name(req.getName())
-                .genres(genreSearch(req.getGenre()))
+                .genres(function.genreSearch(req.getGenre()))
                 .build();
 
-        Integer id = 0;
-        GameEntity data = repo.save(input);
+        try{
+            Integer id = 0;
+            GameEntity data = repo.save(input);
+            id = data.getId();
 
-        id = data.getId();
-        String message = id == 0 ? "Genre Added Failed" : "Genre Added Success";
-        return new ResMessageDto<>(
-                200, message,null
-        );
+            String message = id == 0 ? "Genre Added Failed" : "Genre Added Success";
+            return new ResMessageDto<>(
+                    200, message,null
+            );
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new IllegalArgumentException("Server Error");
+        }
     }
 
     @Override
     public ResMessageDto<String> update(int id, ReqGameDto req) {
-        return null;
+        Optional<GameEntity> data = Optional.of(repo.findById(id).get());
+        if(!data.isPresent()){
+            throw new IllegalArgumentException("Data Not Found");
+        }
+
+        data.get().setType(function.typeAssign(req.getType()));
+        data.get().setName(req.getName());
+        data.get().setGenres(function.genreSearch(req.getGenre()));
+
+        try{
+            GameEntity update = repo.save(data.get());
+
+            String message = id != update.getId()  ? "Genre Updated Failed" : "Genre Updated Success";
+            return new ResMessageDto<>(
+                    200, message,null
+            );
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new IllegalArgumentException("Server Error");
+        }
     }
 
     @Override
-    public ResMessageDto<List<ResGameDto>> getAll() {
-        return null;
+    public ResMessageDto<List<ResGameDto>> getAll(String token) {
+
+        Claims claim = new JwtGenerator().decodeJwt(token);
+        TypeEntity typeEntity = typeRepo.findById(claim.get("type").toString()).get();
+        if(typeEntity == null){
+            throw new IllegalArgumentException("Data Not Found");
+        }
+
+        List<GameEntity> listData;
+
+        if(typeEntity.getName().equals("Free")){
+            listData = repo.findByType(typeEntity);
+        }else{
+            listData = repo.findAll();
+        }
+
+        List<ResGameDto> listDto = new ArrayList<>();
+        for (GameEntity data : listData){
+            ResGameDto dto = ResGameDto.builder()
+                    .id(data.getId())
+                    .name(data.getName())
+                    .type(data.getType().getName())
+                    .genres(function.encodeGenre(data.getGenres()))
+                    .build();
+            listDto.add(dto);
+        }
+        return new ResMessageDto<>(
+                200,
+                "Success Get All Game",
+                listDto
+        );
     }
 
     @Override
-    public ResMessageDto<ResGameDto> getById(int id) {
-        return null;
+    public ResMessageDto<ResGameDto> getById(int id, String token) {
+        Claims claim = new JwtGenerator().decodeJwt(token);
+        TypeEntity typeEntity = typeRepo.findById(claim.get("type").toString()).get();
+
+        Optional<GameEntity> data = Optional.of(repo.findById(id).get());
+        if(typeEntity == null || !data.isPresent()){
+            throw new IllegalArgumentException("Data Not Found");
+        }
+
+        ResGameDto dto = ResGameDto.builder()
+                .id(data.get().getId())
+                .name(data.get().getName())
+                .type(data.get().getType().getName())
+                .genres(function.encodeGenre(data.get().getGenres()))
+                .build();
+        if(typeEntity.getName().equals("Free") && data.get().getType().getName().equals("Free")){
+            return new ResMessageDto<>(
+                    200,
+                    "Success Get Game By Id",
+                    dto
+            );
+        }else if(typeEntity.getName().equals("Premium")){
+            return new ResMessageDto<>(
+                    200,
+                    "Success Get Game By Id",
+                    dto
+            );
+        }else{
+            return new ResMessageDto<>(
+                    200,
+                    "No Access To This Game",
+                    null
+            );
+        }
+    }
+
+    @Override
+    public ResMessageDto<String> delete(int id) {
+
+        Optional<GameEntity> data = Optional.of(repo.findById(id).get());
+        if(!data.isPresent()){
+            throw new IllegalArgumentException("Data Not Found");
+        }
+
+        repo.delete(data.get());
+        return new ResMessageDto<>(
+                200,
+                "Genre Deleted Success",
+                null
+        );
     }
 }
