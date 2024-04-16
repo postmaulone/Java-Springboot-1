@@ -12,6 +12,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -23,13 +25,10 @@ public class GenreServiceImpl implements GenreService {
 
     @Override
     public ResMessageDto<String> create(ReqGenreDto req) {
-//        checkDupeUsr(req.getUsername());
         GenreEntity usedGenre = genreRepository.findByName(req.getName());
         if (usedGenre != null) {
             throw new IllegalArgumentException("Genre name already");
         }
-//        checkDupeEml(req.getEmail());
-//        Argon2 password = Argon2Factory.create();
         GenreEntity input = GenreEntity.builder()
                 .name(req.getName())
                 .build();
@@ -44,16 +43,55 @@ public class GenreServiceImpl implements GenreService {
 
     @Override
     public ResMessageDto<String> update(int id, ReqGenreDto req) {
-        return null;
+        Optional<GenreEntity> optionalGenre = genreRepository.findById(id);
+        if (optionalGenre.isEmpty()) {
+            throw new IllegalArgumentException("Genre not found with ID: " + id);
+        }
+
+        GenreEntity genreToUpdate = optionalGenre.get();
+        genreToUpdate.setName(req.getName());
+
+        genreRepository.save(genreToUpdate);
+
+        return new ResMessageDto<>(200, "Genre updated successfully", null);
     }
 
     @Override
     public ResMessageDto<List<ResGenreDto>> getAll() {
-        return null;
+        List<GenreEntity> allGenres = genreRepository.findAll();
+
+        List<ResGenreDto> resGenreDtoList = allGenres.stream()
+                .map(genre -> ResGenreDto.builder()
+                        .genreName(genre.getName())
+                        .build())
+                .collect(Collectors.toList());
+
+        return new ResMessageDto<>(200, "List of genres retrieved successfully", resGenreDtoList);
+    }
+
+    public ResMessageDto<ResGenreDto> getById(int id) {
+        Optional<GenreEntity> optionalGenre = genreRepository.findById(id);
+
+        if (optionalGenre.isEmpty()) {
+            throw new IllegalArgumentException("Genre not found with ID: " + id);
+        }
+
+        GenreEntity genre = optionalGenre.get();
+        ResGenreDto resGenreDto = ResGenreDto.builder()
+                .genreName(genre.getName())
+                // Isi properti lain yang masih null dengan nilai default atau sesuai kebutuhan
+                .build();
+
+        return new ResMessageDto<>(200, "Genre retrieved successfully", resGenreDto);
     }
 
     @Override
-    public ResMessageDto<ResGenreDto> getById(int id) {
-        return null;
+    public ResMessageDto<String> delete(int id) {
+        GenreEntity genreToDelete = genreRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Genre not found with ID: " + id));
+
+        genreRepository.delete(genreToDelete);
+
+        return new ResMessageDto<>(200, "Genre deleted successfully", null);
     }
 }

@@ -1,8 +1,12 @@
 package com.techno.fromKt.domain.dto.response;
 
-import lombok.Builder;
+import lombok.*;
 
+@Setter
+@Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ResGenreDto {
 
     private String genreName;
