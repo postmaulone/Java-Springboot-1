@@ -9,7 +9,9 @@ import com.techno.fromKt.repository.TypeRepository;
 import com.techno.fromKt.repository.UserRepository;
 import com.techno.fromKt.service.GenreService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -73,13 +75,12 @@ public class GenreServiceImpl implements GenreService {
         Optional<GenreEntity> optionalGenre = genreRepository.findById(id);
 
         if (optionalGenre.isEmpty()) {
-            throw new IllegalArgumentException("Genre not found with ID: " + id);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Genre not found with ID: " + id);
         }
 
         GenreEntity genre = optionalGenre.get();
         ResGenreDto resGenreDto = ResGenreDto.builder()
                 .genreName(genre.getName())
-                // Isi properti lain yang masih null dengan nilai default atau sesuai kebutuhan
                 .build();
 
         return new ResMessageDto<>(200, "Genre retrieved successfully", resGenreDto);
@@ -88,7 +89,7 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public ResMessageDto<String> delete(int id) {
         GenreEntity genreToDelete = genreRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Genre not found with ID: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Genre not found with ID: " + id));
 
         genreRepository.delete(genreToDelete);
 
