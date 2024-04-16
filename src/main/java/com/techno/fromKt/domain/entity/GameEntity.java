@@ -32,4 +32,7 @@ public class GameEntity {
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
     private Set<GenreEntity> genres;
+
+    @ManyToMany(mappedBy = "game")
+    private Set<FavoriteEntity> favorite;
 }

@@ -5,6 +5,7 @@ import com.techno.fromKt.domain.dto.response.ResGameDto;
 import com.techno.fromKt.domain.dto.response.ResMessageDto;
 import com.techno.fromKt.domain.entity.GameEntity;
 import com.techno.fromKt.domain.entity.TypeEntity;
+import com.techno.fromKt.exception.SomethingWrongException;
 import com.techno.fromKt.repository.GameRepository;
 import com.techno.fromKt.repository.TypeRepository;
 import com.techno.fromKt.service.GameService;
@@ -44,7 +45,7 @@ public class GameServiceImpl implements GameService {
             );
         }catch (Exception e){
             e.printStackTrace();
-            throw new IllegalArgumentException("Server Error");
+            throw new SomethingWrongException("Server Error");
         }
     }
 
@@ -52,7 +53,7 @@ public class GameServiceImpl implements GameService {
     public ResMessageDto<String> update(int id, ReqGameDto req) {
         Optional<GameEntity> data = Optional.of(repo.findById(id).get());
         if(!data.isPresent()){
-            throw new IllegalArgumentException("Data Not Found");
+            throw new SomethingWrongException("Data Not Found");
         }
 
         data.get().setType(function.typeAssign(req.getType()));
@@ -68,7 +69,7 @@ public class GameServiceImpl implements GameService {
             );
         }catch (Exception e){
             e.printStackTrace();
-            throw new IllegalArgumentException("Server Error");
+            throw new SomethingWrongException("Server Error");
         }
     }
 
@@ -78,7 +79,7 @@ public class GameServiceImpl implements GameService {
         Claims claim = new JwtGenerator().decodeJwt(token);
         TypeEntity typeEntity = typeRepo.findById(claim.get("type").toString()).get();
         if(typeEntity == null){
-            throw new IllegalArgumentException("Data Not Found");
+            throw new SomethingWrongException("Data Not Found");
         }
 
         List<GameEntity> listData;
@@ -113,7 +114,7 @@ public class GameServiceImpl implements GameService {
 
         Optional<GameEntity> data = Optional.of(repo.findById(id).get());
         if(typeEntity == null || !data.isPresent()){
-            throw new IllegalArgumentException("Data Not Found");
+            throw new SomethingWrongException("Data Not Found");
         }
 
         ResGameDto dto = ResGameDto.builder()
@@ -148,7 +149,7 @@ public class GameServiceImpl implements GameService {
 
         Optional<GameEntity> data = Optional.of(repo.findById(id).get());
         if(!data.isPresent()){
-            throw new IllegalArgumentException("Data Not Found");
+            throw new SomethingWrongException("Data Not Found");
         }
 
         repo.delete(data.get());
