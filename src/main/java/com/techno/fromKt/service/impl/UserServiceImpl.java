@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserService {
         try{
             UserEntity updatedUser = userRepository.save(user);
             return new ResMessageDto<>(
-                    200, "User added!",
+                    200, "User updated!",
                     resUser(updatedUser)
             );
         } catch (Exception ex){

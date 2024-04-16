@@ -27,72 +27,92 @@ public class GenreServiceImpl implements GenreService {
 
     @Override
     public ResMessageDto<String> create(ReqGenreDto req) {
-        GenreEntity usedGenre = genreRepository.findByName(req.getName());
-        if (usedGenre != null) {
-            throw new IllegalArgumentException("Genre name already");
+        try{
+            GenreEntity usedGenre = genreRepository.findByName(req.getName());
+            if (usedGenre != null) {
+                throw new IllegalArgumentException("Genre name already");
+            }
+            GenreEntity input = GenreEntity.builder()
+                    .name(req.getName())
+                    .build();
+            GenreEntity data = genreRepository.save(input);
+            String message = data.getId() > 0 ? "Genre added!" : "";
+            return new ResMessageDto<>(
+                    200,
+                    message,
+                    null
+            );
+        }catch (Exception ex){
+            throw new IllegalArgumentException("Genre add failed" + ex);
         }
-        GenreEntity input = GenreEntity.builder()
-                .name(req.getName())
-                .build();
-        GenreEntity data = genreRepository.save(input);
-        String message = data.getId() > 0 ? "Genre added!" : "";
-        return new ResMessageDto<>(
-                200,
-                message,
-                null
-        );
     }
 
     @Override
     public ResMessageDto<String> update(int id, ReqGenreDto req) {
-        Optional<GenreEntity> optionalGenre = genreRepository.findById(id);
-        if (optionalGenre.isEmpty()) {
-            throw new IllegalArgumentException("Genre not found with ID: " + id);
+        try{
+            Optional<GenreEntity> optionalGenre = genreRepository.findById(id);
+            if (optionalGenre.isEmpty()) {
+                throw new IllegalArgumentException("Genre not found with ID: " + id);
+            }
+
+            GenreEntity genreToUpdate = optionalGenre.get();
+            genreToUpdate.setName(req.getName());
+
+            genreRepository.save(genreToUpdate);
+
+            return new ResMessageDto<>(200, "Genre updated successfully", null);
+        }catch (Exception ex){
+            throw new IllegalArgumentException("Genre add failed" + ex);
         }
-
-        GenreEntity genreToUpdate = optionalGenre.get();
-        genreToUpdate.setName(req.getName());
-
-        genreRepository.save(genreToUpdate);
-
-        return new ResMessageDto<>(200, "Genre updated successfully", null);
     }
 
     @Override
     public ResMessageDto<List<ResGenreDto>> getAll() {
-        List<GenreEntity> allGenres = genreRepository.findAll();
+        try{
+            List<GenreEntity> allGenres = genreRepository.findAll();
 
-        List<ResGenreDto> resGenreDtoList = allGenres.stream()
-                .map(genre -> ResGenreDto.builder()
-                        .genreName(genre.getName())
-                        .build())
-                .collect(Collectors.toList());
+            List<ResGenreDto> resGenreDtoList = allGenres.stream()
+                    .map(genre -> ResGenreDto.builder()
+                            .genreName(genre.getName())
+                            .build())
+                    .collect(Collectors.toList());
 
-        return new ResMessageDto<>(200, "List of genres retrieved successfully", resGenreDtoList);
+            return new ResMessageDto<>(200, "List of genres retrieved successfully", resGenreDtoList);
+        }catch (Exception ex){
+            throw new IllegalArgumentException("Genre add failed" + ex);
+        }
     }
 
     public ResMessageDto<ResGenreDto> getById(int id) {
-        Optional<GenreEntity> optionalGenre = genreRepository.findById(id);
+        try{
+            Optional<GenreEntity> optionalGenre = genreRepository.findById(id);
 
-        if (optionalGenre.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Genre not found with ID: " + id);
+            if (optionalGenre.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Genre not found with ID: " + id);
+            }
+
+            GenreEntity genre = optionalGenre.get();
+            ResGenreDto resGenreDto = ResGenreDto.builder()
+                    .genreName(genre.getName())
+                    .build();
+
+            return new ResMessageDto<>(200, "Genre retrieved successfully", resGenreDto);
+        }catch (Exception ex){
+            throw new IllegalArgumentException("Genre add failed" + ex);
         }
-
-        GenreEntity genre = optionalGenre.get();
-        ResGenreDto resGenreDto = ResGenreDto.builder()
-                .genreName(genre.getName())
-                .build();
-
-        return new ResMessageDto<>(200, "Genre retrieved successfully", resGenreDto);
     }
 
     @Override
     public ResMessageDto<String> delete(int id) {
-        GenreEntity genreToDelete = genreRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Genre not found with ID: " + id));
+        try{
+            GenreEntity genreToDelete = genreRepository.findById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Genre not found with ID: " + id));
 
-        genreRepository.delete(genreToDelete);
+            genreRepository.delete(genreToDelete);
 
-        return new ResMessageDto<>(200, "Genre deleted successfully", null);
+            return new ResMessageDto<>(200, "Genre deleted successfully", null);
+        }catch (Exception ex){
+            throw new IllegalArgumentException("Genre add failed" + ex);
+        }
     }
 }
