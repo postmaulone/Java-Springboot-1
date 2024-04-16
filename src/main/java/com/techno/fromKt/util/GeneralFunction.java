@@ -1,7 +1,10 @@
 package com.techno.fromKt.util;
 
+import com.techno.fromKt.domain.entity.GameEntity;
 import com.techno.fromKt.domain.entity.GenreEntity;
 import com.techno.fromKt.domain.entity.TypeEntity;
+import com.techno.fromKt.exception.SomethingWrongException;
+import com.techno.fromKt.repository.GameRepository;
 import com.techno.fromKt.repository.GenreRepository;
 import com.techno.fromKt.repository.TypeRepository;
 import lombok.AllArgsConstructor;
@@ -15,6 +18,7 @@ import java.util.Set;
 public class GeneralFunction{
     TypeRepository typeRepo;
     GenreRepository genreRepo;
+    GameRepository gameRepo;
     public TypeEntity typeAssign(String type) {
         TypeEntity typeFound = typeRepo.findByName(nullType(type));
         if (typeFound == null) {
@@ -45,7 +49,33 @@ public class GeneralFunction{
         Set<String> set = new HashSet<>();
         for (GenreEntity genreId : genre) {
             GenreEntity entity = genreRepo.findById(genreId.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Genre not found"));
+                    .orElseThrow(() -> new SomethingWrongException("Genre not found"));
+            set.add(entity.getName());
+        }
+        return set;
+    }
+
+    public Set<GameEntity> gameSearch(Set<Integer> game, String type){
+        Set<GameEntity> set = new HashSet<>();
+        for (Integer gameId : game) {
+            GameEntity entity = gameRepo.findById(gameId)
+                    .orElseThrow(() -> new SomethingWrongException("Genre not found"));
+            if(type.equals("T002")) {
+                set.add(entity);
+            }else if(entity.getType().getId().equals(type)){
+                set.add(entity);
+            }else{
+                throw new SomethingWrongException("No Access To This Game");
+            }
+        }
+        return set;
+    }
+
+    public Set<String> encodeGame(Set<GameEntity> game){
+        Set<String> set = new HashSet<>();
+        for (GameEntity gameId : game) {
+            GameEntity entity = gameRepo.findById(gameId.getId())
+                    .orElseThrow(() -> new SomethingWrongException("Genre not found"));
             set.add(entity.getName());
         }
         return set;
