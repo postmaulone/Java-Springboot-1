@@ -11,6 +11,6 @@ public interface GenreService {
     ResMessageDto<String> update(int id, ReqGenreDto req);
     ResMessageDto<java.util.List<ResGenreDto>> getAll();
     ResMessageDto<ResGenreDto> getById(int id);
-//    ResMessageDto<String> delete(int id);
+    ResMessageDto<String> delete(int id);
 
 }

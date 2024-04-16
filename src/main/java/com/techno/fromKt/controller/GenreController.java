@@ -49,4 +49,12 @@ public class GenreController {
     ) {
         return ResponseEntity.ok(genreService.getById(id));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResMessageDto<String>> deleteGenreById(
+            @PathVariable int id
+    ) {
+        ResMessageDto<String> deleteResult = genreService.delete(id);
+        return ResponseEntity.ok(deleteResult);
+    }
 }

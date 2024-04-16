@@ -84,4 +84,14 @@ public class GenreServiceImpl implements GenreService {
 
         return new ResMessageDto<>(200, "Genre retrieved successfully", resGenreDto);
     }
+
+    @Override
+    public ResMessageDto<String> delete(int id) {
+        GenreEntity genreToDelete = genreRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Genre not found with ID: " + id));
+
+        genreRepository.delete(genreToDelete);
+
+        return new ResMessageDto<>(200, "Genre deleted successfully", null);
+    }
 }
