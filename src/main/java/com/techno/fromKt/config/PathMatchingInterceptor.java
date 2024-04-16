@@ -20,7 +20,7 @@ public class PathMatchingInterceptor implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/v1/api/user/login",
                         "/v1/api/user/validate",
-                        "/v1/api/user/create"
+                        "/v1/api/user/register"
                 );
     }
 }

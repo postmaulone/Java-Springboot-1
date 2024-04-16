@@ -4,6 +4,7 @@ import com.techno.fromKt.domain.dto.request.ReqUserDto;
 import com.techno.fromKt.domain.dto.response.ResMessageDto;
 import com.techno.fromKt.domain.dto.response.ResUserDto;
 import com.techno.fromKt.domain.entity.UserEntity;
+import com.techno.fromKt.exception.SomethingWrongException;
 import com.techno.fromKt.repository.TypeRepository;
 import com.techno.fromKt.repository.UserRepository;
 import com.techno.fromKt.service.UserService;
@@ -29,13 +30,13 @@ public class UserServiceImpl implements UserService {
     private void checkDupeUsr(String username) {
         UserEntity usedUsername = userRepository.findByUsername(username);
         if (usedUsername != null) {
-            throw new IllegalArgumentException("Username already used");
+            throw new SomethingWrongException("Username already used");
         }
     }
     private void checkDupeEml(String email){
         UserEntity usedEmail = userRepository.findByEmail(email);
         if(usedEmail != null){
-            throw new IllegalArgumentException("Email already used");
+            throw new SomethingWrongException("Email already used");
         }
     }
     private ResUserDto resUser(UserEntity user){
@@ -57,7 +58,7 @@ public class UserServiceImpl implements UserService {
     public UserEntity isExist(int id) {
         Optional<UserEntity> user = userRepository.findById(id);
         if (user.isEmpty()) {
-            throw new IllegalArgumentException("User id not found");
+            throw new SomethingWrongException("User id not found");
         }
         return user.get();
     }
@@ -84,7 +85,7 @@ public class UserServiceImpl implements UserService {
                     resUser(newUser)
             );
         } catch (Exception ex){
-            throw new IllegalArgumentException("User add failed: " + ex);
+            throw new SomethingWrongException("User add failed: " + ex);
         }
     }
 
@@ -107,7 +108,7 @@ public class UserServiceImpl implements UserService {
                     resUser(updatedUser)
             );
         } catch (Exception ex){
-            throw new IllegalArgumentException("User update failed: " + ex);
+            throw new SomethingWrongException("User update failed: " + ex);
         }
     }
 
@@ -124,7 +125,7 @@ public class UserServiceImpl implements UserService {
             }
             return new ResMessageDto<>(200, "Success", res);
         } catch (Exception ex){
-            throw new IllegalArgumentException("Get users failed: " + ex);
+            throw new SomethingWrongException("Get users failed: " + ex);
         }
     }
 
@@ -136,7 +137,7 @@ public class UserServiceImpl implements UserService {
             ResUserDto res = resUser(user);
             return new ResMessageDto<>(200, "Success", res);
         }catch (Exception ex){
-            throw new IllegalArgumentException("Get user failed: " + ex);
+            throw new SomethingWrongException("Get user failed: " + ex);
         }
     }
 }
