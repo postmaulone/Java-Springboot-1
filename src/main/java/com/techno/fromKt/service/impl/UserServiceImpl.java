@@ -38,8 +38,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Email already used");
         }
     }
-    private ResUserDto resUser(String username){
-        UserEntity user = userRepository.findByUsername(username);
+    private ResUserDto resUser(UserEntity user){
         String type = null;
         if(Objects.equals(user.getType(), "T001")){
             type = "Free";
@@ -78,11 +77,15 @@ public class UserServiceImpl implements UserService {
                 .password(hashPw(req.getPassword()))
                 .type(generalFunction.typeAssign(req.getType()).getId())
                 .build();
-        userRepository.save(input);
-        return new ResMessageDto<>(
-                200, "User added!",
-                resUser(req.getUsername())
-        );
+        try {
+            UserEntity newUser = userRepository.save(input);
+            return new ResMessageDto<>(
+                    200, "User added!",
+                    resUser(newUser)
+            );
+        } catch (Exception ex){
+            throw new IllegalArgumentException("User add failed: " + ex);
+        }
     }
 
     @Override
@@ -97,31 +100,43 @@ public class UserServiceImpl implements UserService {
         user.setEmail(req.getEmail());
         user.setPassword(hashPw(req.getPassword()));
         user.setType(generalFunction.typeAssign(req.getType()).getId());
-        userRepository.save(user);
-        return new ResMessageDto<>(
-                200, "User added!",
-                resUser(req.getUsername())
-        );
+        try{
+            UserEntity updatedUser = userRepository.save(user);
+            return new ResMessageDto<>(
+                    200, "User added!",
+                    resUser(updatedUser)
+            );
+        } catch (Exception ex){
+            throw new IllegalArgumentException("User update failed: " + ex);
+        }
     }
 
     @Override
     public ResMessageDto<List<ResUserDto>> getAll() {
-        List<UserEntity> users = userRepository.findAll();
-        List<ResUserDto> res = new ArrayList<>();
-        for (UserEntity user : users){
-            if(user.getUsername() != null){
-                ResUserDto data = resUser(user.getUsername());
-                res.add(data);
+        try{
+            List<UserEntity> users = userRepository.findAll();
+            List<ResUserDto> res = new ArrayList<>();
+            for (UserEntity user : users){
+                if(user.getUsername() != null){
+                    ResUserDto data = resUser(user);
+                    res.add(data);
+                }
             }
+            return new ResMessageDto<>(200, "Success", res);
+        } catch (Exception ex){
+            throw new IllegalArgumentException("Get users failed: " + ex);
         }
-        return new ResMessageDto<>(200, "Success", res);
     }
 
     @Override
     public ResMessageDto<ResUserDto> getById(String token) {
-        int id = (int) new JwtGenerator().decodeJwt(token).get("id");
-        UserEntity user = isExist(id);
-        ResUserDto res = resUser(user.getUsername());
-        return new ResMessageDto<>(200, "Success", res);
+        try{
+            int id = (int) new JwtGenerator().decodeJwt(token).get("id");
+            UserEntity user = isExist(id);
+            ResUserDto res = resUser(user);
+            return new ResMessageDto<>(200, "Success", res);
+        }catch (Exception ex){
+            throw new IllegalArgumentException("Get user failed: " + ex);
+        }
     }
 }
